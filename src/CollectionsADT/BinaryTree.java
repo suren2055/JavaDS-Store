@@ -179,6 +179,46 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
         return current;
     }
 
+    public boolean removeIterative(T v) {
+        return removeIterative(root,v);
+    }
+    private boolean removeIterative(Node<T> n, T v) {
+        Node<T> temp = n;
+        while(temp!=null) {
+            if (v.compareTo(temp._value)==0){
+                if (temp._left==null &&temp._right==null){
+                    Node<T> parent = temp._parent;
+                    if (temp==parent._left)
+                        parent._left=null;
+                    else
+                        parent._right=null;
+                    return true;
+
+                }
+                if (temp._left!=null && temp._right!=null) {
+                    T newValue = getLargest(temp._left);//getSmallest(temp._right);
+                    temp._value = newValue;
+                    removeIterative(temp._left,newValue);//removeIterative(n._right,newValue);
+                    return true;
+                }
+                Node<T> child = temp._right;
+                if (child==null)
+                    child=temp._left;
+                Node<T> parent = temp._parent;
+                if (temp==parent._left)
+                    parent._left=child;
+                else
+                    parent._right = child;
+                return true;
+            }
+            if (v.compareTo(temp._value)>0)
+                temp = temp._right;
+            if (v.compareTo(temp._value)<0)
+                temp = temp._left;
+        }
+        return false;
+    }
+
     private Node<T> getSmallest(Node<T> n) {
 
         if (n == null)

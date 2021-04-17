@@ -177,4 +177,27 @@ public class HashMap<K extends Comparable<K>, V extends Comparable<V>> implement
         return null;
     }
 
+    public boolean hasValue(V v) {
+        if (isEmpty())
+            return false;
+        for (int x = 0; x < hashtable.length; x++) {
+            if (hashtable[x] != null) {
+                if (hashtable[x]._value == v)
+                    return true;
+                else {
+                    if (hashtable[x]._next != null) {
+                        Entry temp = hashtable[x]._next;
+                        while (temp != null) {
+                            if (temp._value.equals(v))
+                                return true;
+                            temp = temp._next;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+        //The complexity of given function is O(n^2)
+    }
+
 }

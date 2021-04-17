@@ -36,17 +36,17 @@ public class HashSet<T extends Comparable<T>> implements Set<T> {
         return Math.abs(element.hashCode()) % capacity;
     }
 
-    @Override
+
     public int size() {
         return size;
     }
 
-    @Override
+
     public boolean isEmpty() {
         return size == 0;
     }
 
-    @Override
+
     public boolean add(T e) {
 
         if (contains(e))
@@ -75,21 +75,24 @@ public class HashSet<T extends Comparable<T>> implements Set<T> {
         }
     }
 
-    @Override
+
     public boolean remove(T e) {
         if (!contains(e))
             return false;
         int index = hash(e);
-        if (hashtable[index]._element.equals(e)) {
+        if (hashtable[index]._element.equals(e))  {
             hashtable[index] = hashtable[index]._next;
             return true;
         }
         Node n = hashtable[index];
         Node p = null;
         while (n != null) {
-            if (n._element.equals(e))
-                p._next = n._next;
-
+            if (n._element.equals(e)) {
+                if (p==null)
+                    hashtable[index] = n._next;
+                else
+                    p._next = n._next;
+            }
             p = n;
             n = n._next;
         }
@@ -97,7 +100,7 @@ public class HashSet<T extends Comparable<T>> implements Set<T> {
         return false;
     }
 
-    @Override
+
     public boolean contains(T e) {
 
         int index = hash(e);
@@ -116,19 +119,19 @@ public class HashSet<T extends Comparable<T>> implements Set<T> {
         return false;
     }
 
-    @Override
+
     public boolean equals(Set set) {
 
-        if (!(size==set.size()))
+        if (!(size == set.size()))
             return false;
 
-        for (int i = 0;i<hashtable.length;i++) {
-            if (hashtable[i]!=null) {
+        for (int i = 0; i < hashtable.length; i++) {
+            if (hashtable[i] != null) {
                 Node n = hashtable[i];
-                while(n!=null) {
-                    if (!set.contains((T)n._element))
+                while (n != null) {
+                    if (!set.contains((T) n._element))
                         return false;
-                    n=n._next;
+                    n = n._next;
                 }
 
             }
@@ -138,22 +141,34 @@ public class HashSet<T extends Comparable<T>> implements Set<T> {
         return true;
     }
 
-    @Override
+
     public boolean containsAll(Set set) {
         return false;
     }
 
-    @Override
+
     public boolean addAll(Set set) {
         return false;
     }
 
-    @Override
+
     public boolean removeAll(Set set) {
-        return false;
+        for (int x = 0; x < size; x++) {
+            Node n = hashtable[x];
+            while (n != null) {
+
+                if (set.contains((T) n._element)) {
+                    n = n._next;
+                    remove((T) n._element);
+                } else
+                    n = n._next;
+
+            }
+        }
+        return true;
     }
 
-    @Override
+
     public boolean retainAll(Set set) {
         return false;
     }

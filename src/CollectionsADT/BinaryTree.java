@@ -4,6 +4,7 @@ import CollectionsADT.Abstract.Queue;
 import CollectionsADT.Abstract.Tree;
 
 import java.util.Iterator;
+import java.util.Stack;
 
 public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T> {
 
@@ -55,7 +56,7 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
         public T next() {
             if (!hasNext())
                 return null;
-            T value =  _currentNode._value;
+            T value = _currentNode._value;
             if (_currentNode._right != null)
                 _currentNode = getSmallest(_currentNode._right);
             else {
@@ -67,9 +68,49 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
                 }
                 _currentNode = p;
             }
-           return value;
+            return value;
         }
     }
+
+    private class InOrderIteratorStack implements Iterator<T> {
+
+        private Stack<Node> s;
+
+        public InOrderIteratorStack() {
+
+            s = new Stack<>();
+            Node c = root;
+            while (c != null) {
+                s.push(c);
+                c = c._left;
+            }
+
+        }
+
+        public boolean hasNext() {
+            return !s.isEmpty();
+        }
+
+
+        public T next() {
+
+            if (!hasNext())
+                return null;
+            Node n = s.pop();
+            T toReturn = (T) s.peek()._value;
+            if (n._right != null) {
+                s.push(n._right);
+                n = n._right._left;
+                while (n != null) {
+                    s.push(n);
+                    n = n._left;
+
+                }
+            }
+            return toReturn;
+        }
+    }
+
     private class PostOrderIteratorStack implements Iterator<T> {
 
         LinkedList<T> _values;
@@ -78,9 +119,10 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
             _values = new LinkedList<>();
             propogateValues(root);
         }
-        private void propogateValues(Node<T> n){
 
-            if (n==null)
+        private void propogateValues(Node<T> n) {
+
+            if (n == null)
                 return;
             propogateValues(n._left);
             propogateValues(n._right);
@@ -94,17 +136,45 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
         public T next() {
             if (!hasNext())
                 return null;
-            T value =  _values.removeFirst();
+            T value = _values.removeFirst();
             return value;
         }
     }
+    private class PreOrderIterator implements Iterator<T> {
+
+        Node cur = root;
+
+
+        public boolean hasNext() {
+            return cur!=null;
+        }
+
+
+        public T next() {
+            if (!hasNext())
+                return null;
+            T toReturn = (T)cur._value;
+            cur = getNextInPreOrder(cur);
+
+            return toReturn;
+
+        }
+    }
+
 
     public Iterator iterator() {
         return new InOrderIterator();
     }
+
+    public Iterator inOrderIteratorStack() {
+        return new InOrderIteratorStack();
+    }
+
     public Iterator postOrderIteratorStack() {
         return new PostOrderIteratorStack();
     }
+    public Iterator preOrderIterator(){return new PreOrderIterator();}
+
 
     public BinaryTree() {
         root = null;
@@ -137,6 +207,41 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
         }
 
         return current;
+    }
+
+    public boolean insertIterative(T v) {
+        if (contains(v))
+            return false;
+        Node temp = root;
+        if (this.isEmpty()) {
+            root = new Node<T>(v);
+            _size++;
+        } else {
+            while (temp != null) {
+                if (v.compareTo((T) temp._value) == 0) {
+                    return false;
+                }
+                if (v.compareTo((T) temp._value) > 0) {
+                    if (temp._right == null) {
+                        temp._right = new Node(v);
+                        temp._right._parent = temp;
+                        _size++;
+                        return true;
+                    } else
+                        temp = temp._right;
+                }//right
+                if (v.compareTo((T) temp._value) < 0) {
+                    if (temp._left == null) {
+                        temp._left = new Node(v);
+                        temp._left._parent = temp;
+                        _size++;
+                        return true;
+                    } else
+                        temp = temp._left;
+                }//left
+            }
+        }
+        return true;
     }
 
     public boolean remove(T v) {
@@ -180,40 +285,42 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
     }
 
     public boolean removeIterative(T v) {
-        return removeIterative(root,v);
+
+        return removeIterative(root, v);
     }
+
     private boolean removeIterative(Node<T> n, T v) {
         Node<T> temp = n;
-        while(temp!=null) {
-            if (v.compareTo(temp._value)==0){
-                if (temp._left==null &&temp._right==null){
+        while (temp != null) {
+            if (v.compareTo(temp._value) == 0) {
+                if (temp._left == null && temp._right == null) {
                     Node<T> parent = temp._parent;
-                    if (temp==parent._left)
-                        parent._left=null;
+                    if (temp == parent._left)
+                        parent._left = null;
                     else
-                        parent._right=null;
+                        parent._right = null;
                     return true;
 
                 }
-                if (temp._left!=null && temp._right!=null) {
+                if (temp._left != null && temp._right != null) {
                     T newValue = getLargest(temp._left);//getSmallest(temp._right);
                     temp._value = newValue;
-                    removeIterative(temp._left,newValue);//removeIterative(n._right,newValue);
+                    removeIterative(temp._left, newValue);//removeIterative(n._right,newValue);
                     return true;
                 }
                 Node<T> child = temp._right;
-                if (child==null)
-                    child=temp._left;
+                if (child == null)
+                    child = temp._left;
                 Node<T> parent = temp._parent;
-                if (temp==parent._left)
-                    parent._left=child;
+                if (temp == parent._left)
+                    parent._left = child;
                 else
                     parent._right = child;
                 return true;
             }
-            if (v.compareTo(temp._value)>0)
+            if (v.compareTo(temp._value) > 0)
                 temp = temp._right;
-            if (v.compareTo(temp._value)<0)
+            if (v.compareTo(temp._value) < 0)
                 temp = temp._left;
         }
         return false;
@@ -268,6 +375,27 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
         return _size == 0;
     }
 
+    private Node getNextInPreOrder(Node n) {
+        if (n._left != null)
+            return n._left;
+
+        if (n._right != null)
+            return n._right;
+
+        Node p = n._parent;
+        while ((p != null && p._right!=null && p._right.equals(n)) ||
+                (p != null && p._left!=null && p._left.equals(n) && p._right == null)) {
+            n = n._parent;
+            p = n._parent;
+
+        }
+        if (p == null) {
+            return null;
+        }
+        return p._right;
+
+
+    }
 
     //#region Traversals BinaryTrees
 

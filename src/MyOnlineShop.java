@@ -29,45 +29,7 @@ public class MyOnlineShop {
 
     public static void main(String[] str) {
 
-        GeneralTree<String> tree = new GeneralTree<>();
-        GeneralTree.Node root = tree.new Node<String>("My book");
-
-        tree.set_root(root);
-        GeneralTree.Node title = tree.new Node<String>("Title", root);
-        GeneralTree.Node ch1 = tree.new Node<String>("Chapter 1", root);
-        GeneralTree.Node ch2 = tree.new Node<String>("Chapter 2", root);
-        GeneralTree.Node ch3 = tree.new Node<String>("Chapter 3", root);
-        GeneralTree.Node ref = tree.new Node<String>("References", root);
-        GeneralTree.Node ch1_1 = tree.new Node<String>("# 1.1", ch1);
-        GeneralTree.Node ch1_2 = tree.new Node<String>("# 1.2", ch1);
-        GeneralTree.Node ch1_2_1 = tree.new Node<String>("# 1.2.1", ch1_2);
-        GeneralTree.Node ch2_1 = tree.new Node<String>("# 2.1", ch2);
-
-        //tree.printPreorder();
-        //tree.printPostorder();
-
-        BinaryTree<Integer> b = new BinaryTree<>();
-//        GeneralTree.Node root = tree.new Node<String>("My book");
-        b.insert(50);
-        b.insert(25);
-        b.insert(70);
-        b.insert(60);
-        b.insert(75);
-        b.insert(40);
-        b.insert(10);
-        b.printInorder();
-        b.printLevelorder();
-
-
-        System.out.println("Print using inorder iterator");
-        Iterator<Integer> it = b.iterator();
-        while(it.hasNext())
-            System.out.println(it.next());
-
-        System.out.println("Print using postorder iterator stack");
-        Iterator<Integer> it1 = b.postOrderIteratorStack();
-        while(it1.hasNext())
-            System.out.println(it1.next());
+        
 
     }
 

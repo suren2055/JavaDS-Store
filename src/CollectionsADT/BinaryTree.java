@@ -17,10 +17,12 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
         private Node<T> _left = null;
         private Node<T> _right = null;
         private Node<T> _parent;
+        private int _height;
 
         public Node(T value) {
             this._value = value;
             this._parent = null;
+            this._height = 0;
         }
 
         public T get_value() {
@@ -140,20 +142,21 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
             return value;
         }
     }
+
     private class PreOrderIterator implements Iterator<T> {
 
         Node cur = root;
 
 
         public boolean hasNext() {
-            return cur!=null;
+            return cur != null;
         }
 
 
         public T next() {
             if (!hasNext())
                 return null;
-            T toReturn = (T)cur._value;
+            T toReturn = (T) cur._value;
             cur = getNextInPreOrder(cur);
 
             return toReturn;
@@ -173,8 +176,10 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
     public Iterator postOrderIteratorStack() {
         return new PostOrderIteratorStack();
     }
-    public Iterator preOrderIterator(){return new PreOrderIterator();}
 
+    public Iterator preOrderIterator() {
+        return new PreOrderIterator();
+    }
 
     public BinaryTree() {
         root = null;
@@ -205,9 +210,71 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
             current._left = insert(current._left, value);
             current._left._parent = current;
         }
+        if (value.compareTo(current._value) == 0)
+            return current;
+        if (!isBalanced(current)) {
+
+            int c = current._left._height - current._right._height;
+            if (c < 0) {
+
+                if (value.compareTo(current._right._value) < 0) {
+                    //perform right rotation of current._right
+                     rightRotate(current._right);
+                }
+                //left less than right: perform left rotation of current
+                 leftRotate(current);
+            } else {
+                if (value.compareTo(current._right._value) > 0) {
+                    //perform left rotation current._left
+                    leftRotate(current._left);
+                }
+                //right less than or equal left: perform right rotation of current
+                rightRotate(current);
+            }
+
+        }
 
         return current;
     }
+
+    private void leftRotate(Node<T> n) {
+        Node<T> x = n;
+        Node<T> y = n._right;
+        Node<T> k = y._left;
+
+        if (n == n._parent._left)
+            n._parent._left = n._right;
+        else
+            n._parent._right = n._right;
+
+        n._right._parent = n._parent;
+        y._left = x;
+        x._parent = y;
+        x._left = k;
+        if (k==null)
+            k._parent = x;
+
+
+    }
+
+    private void rightRotate(Node<T> n) {
+
+        Node<T> x = n;
+        Node<T> y = n._left;
+        Node<T> k = y._right;
+
+        if (n == n._parent._left)
+            n._parent._left = y;
+        else
+            n._parent._right = y;
+
+        y._right = x;
+        x._parent = y;
+        x._right = k;
+        if (k==null)
+            k._parent =x;
+    }
+
 
     public boolean insertIterative(T v) {
         if (contains(v))
@@ -375,6 +442,38 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
         return _size == 0;
     }
 
+    public int height() {
+        return getHeight(root);
+    }
+
+    public boolean isBalanced() {
+
+        return isBalanced(root);
+    }
+
+    private boolean isBalanced(Node<T> n) {
+        if (n == null)
+            return true;
+
+        int lh = getHeight(n._left);
+        int rh = getHeight(n._right);
+
+        if (Math.abs(lh - rh) <= 1) {
+            return isBalanced(n._left) && isBalanced(n._right);
+        }
+        return false;
+
+
+    }
+
+    private int getHeight(Node<T> n) {
+
+        if (n == null) return 0;
+        return 1 + Math.max(getHeight(n._left), getHeight(n._right));
+
+
+    }
+
     private Node getNextInPreOrder(Node n) {
         if (n._left != null)
             return n._left;
@@ -383,8 +482,8 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
             return n._right;
 
         Node p = n._parent;
-        while ((p != null && p._right!=null && p._right.equals(n)) ||
-                (p != null && p._left!=null && p._left.equals(n) && p._right == null)) {
+        while ((p != null && p._right != null && p._right.equals(n)) ||
+                (p != null && p._left != null && p._left.equals(n) && p._right == null)) {
             n = n._parent;
             p = n._parent;
 

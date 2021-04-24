@@ -9,7 +9,8 @@ public interface Tree<T extends Comparable<T>> {
     boolean contains(T v);
     int size();
     boolean isEmpty();
-//
+    int height();
+
 //    T element(T node);
 //
 //    T root();

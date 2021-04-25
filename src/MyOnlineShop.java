@@ -7,6 +7,7 @@ import CollectionsADT.ArrayDeque;
 import CollectionsADT.HashMap;
 import CollectionsADT.HashSet;
 import CollectionsADT.LinkedList;
+import CollectionsADT.TreeMap;
 import Models.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -18,6 +19,7 @@ import javax.xml.bind.SchemaOutputResolver;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.TreeSet;
 
 public class MyOnlineShop {
     static double rangeMin = 0.5;
@@ -29,7 +31,18 @@ public class MyOnlineShop {
 
     public static void main(String[] str) {
 
-        
+        TreeMap<Integer, Integer> bst = new TreeMap<Integer,Integer>();
+        bst.put(8,8);
+        bst.put(18,18);
+        bst.put(5,5);
+        bst.put(15,15);
+        bst.put(17,17);
+        bst.put(25,25);
+        bst.put(40,40);
+        bst.put(80,80);
+        //bst.remove(25);
+        bst.prettyPrint();
+
 
     }
 

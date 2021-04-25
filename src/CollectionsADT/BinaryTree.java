@@ -212,6 +212,8 @@ public class BinaryTree<T extends Comparable<T>> implements Tree<T>, Iterable<T>
         }
         if (value.compareTo(current._value) == 0)
             return current;
+
+
         if (!isBalanced(current)) {
 
             int c = current._left._height - current._right._height;

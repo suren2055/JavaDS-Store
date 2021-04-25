@@ -1,6 +1,8 @@
 package Models;
 
-public abstract class Product  {
+import java.util.Comparator;
+
+public abstract class Product {
 
     private double price;
     private double rating;
@@ -9,7 +11,9 @@ public abstract class Product  {
         System.out.println(this.toString());
     }
 
-    protected void rate(double d) { setRating(d); }
+    protected void rate(double d) {
+        setRating(d);
+    }
 
     public double getPrice() {
         return price;
@@ -19,7 +23,9 @@ public abstract class Product  {
         return rating;
     }
 
-    public void setRating(double rating) { this.rating = rating; }
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
 
     @Override
     public String toString() {
@@ -27,6 +33,27 @@ public abstract class Product  {
                 "price=" + price +
                 ", rating=" + rating +
                 '}';
+    }
+
+
+    static class ProductsPriceComparator implements Comparator<Product> {
+        public int compare(Product o1, Product o2) {
+            if (o1.price > o2.price)
+                return 1;
+            if (o1.price < o2.price)
+                return -1;
+            return 0;
+        }
+    }
+
+    static class ProductsRateComparator implements Comparator<Product> {
+        public int compare(Product o1, Product o2) {
+            if (o1.rating > o2.rating)
+                return 1;
+            if (o1.rating < o2.rating)
+                return -1;
+            return 0;
+        }
     }
 
 

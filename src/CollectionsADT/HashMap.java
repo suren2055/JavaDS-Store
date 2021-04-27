@@ -98,6 +98,7 @@ public class HashMap<K extends Comparable<K>, V extends Comparable<V>> implement
         int index = hash(key);
         if (hashtable[index] == null) {
             hashtable[index] = new Entry(key, value, null);
+            size++;
             return value;
         }
         Entry e = hashtable[index];
@@ -110,6 +111,7 @@ public class HashMap<K extends Comparable<K>, V extends Comparable<V>> implement
             e = e._next;
         }
         hashtable[index] = new Entry(key, value, hashtable[index]);
+        size++;
         return value;
     }
 

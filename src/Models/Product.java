@@ -2,7 +2,7 @@ package Models;
 
 import java.util.Comparator;
 
-public abstract class Product {
+public abstract class Product implements Comparable<Product>{
 
     private double price;
     private double rating;
@@ -36,7 +36,7 @@ public abstract class Product {
     }
 
 
-    static class ProductsPriceComparator implements Comparator<Product> {
+    public static class ProductsPriceComparator implements Comparator<Product> {
         public int compare(Product o1, Product o2) {
             if (o1.price > o2.price)
                 return 1;
@@ -46,7 +46,7 @@ public abstract class Product {
         }
     }
 
-    static class ProductsRateComparator implements Comparator<Product> {
+    public static class ProductsRateComparator implements Comparator<Product> {
         public int compare(Product o1, Product o2) {
             if (o1.rating > o2.rating)
                 return 1;

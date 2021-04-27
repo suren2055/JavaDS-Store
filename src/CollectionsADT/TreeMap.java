@@ -6,20 +6,22 @@ import CollectionsADT.Abstract.Map;
 import java.util.Comparator;
 import java.util.Iterator;
 
-//Based on on red-black
-public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implements Map<K, V>, Iterable<TreeMap.Entry<K, V>> {
-
-    private static final boolean RED = false;
-    private static final boolean BLACK = true;
+//Based on on red-black tree
+public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implements Map<K, V> {
 
     private Entry<K, V> _root;
     private int _size;
     private Comparator<K> _cmp;
+    private Entry<K, V> _nil;
 
     public TreeMap() {
-        _root = null;
         _size = 0;
         _cmp = null;
+        _nil = new Entry<>();
+        _nil.color = 0;
+        _nil._left = null;
+        _nil._right = null;
+        _root = _nil;
     }
 
     public TreeMap(Comparator<K> cmp) {
@@ -28,21 +30,23 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
         this._cmp = cmp;
     }
 
-    static class Entry<K, V> {
+    public static class Entry<K extends Comparable<K>, V extends Comparable<V>> implements Comparable<Entry<K, V>> {
 
         private K _key;
         private V _value;
         private Entry<K, V> _left = null;
         private Entry<K, V> _right = null;
         private Entry<K, V> _parent;
-        boolean color = BLACK;
+        int color; // 1 . Red, 0 . Black
+
+        public Entry() {
+        }
 
         public Entry(K _key, V _value) {
             this._key = _key;
             this._value = _value;
             _parent = null;
         }
-
 
         public V get_value() {
             return _value;
@@ -59,37 +63,38 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
         public void set_parent(Entry<K, V> _parent) {
             this._parent = _parent;
         }
+
+        public int compareTo(Entry<K, V> o) {
+
+            return this._key.compareTo(o._key);
+        }
     }
 
-    public Iterator<Entry<K, V>> iterator() {
-        return null;
-    }
+
 
     public V put(K key, V value) {
-        if (_cmp == null)
-            return insertIterative(key, value);
-        return insertIterativeCmp(key, value);
+        insert(key, value);
+        return value;
     }
+
     public V remove(K key) {
-        Entry<K, V> p = getEntry(key);
-        if (p == null)
-            return p._value;
-        V v = p._value;
-        if (_cmp == null)
-            removeIterative(_root, key);
-        else
-            removeIterativeCmp(_root, key);
-        return v;
+        V toReturn = getEntry(key)._value;
+        remove(this._root, key);
+        return toReturn;
     }
+
     public V get(K key, V value) {
         return getEntry(key)._value;
     }
+
     public V get(K key) {
         return getEntry(key)._value;
     }
+
     public int size() {
         return _size;
     }
+
     public boolean isEmpty() {
         return _size == 0;
     }
@@ -97,11 +102,40 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
     public HashSet keySet() {
         return null;
     }
+
     public LinkedList<V> values() {
         return null;
     }
+
     public HashSet entrySet() {
         return null;
+    }
+
+    public Entry successor(Entry x) {
+        if (x._right != null) {
+            return getSmallest(x._right);
+        }
+        Entry y = x._parent;
+        while (y != null && x == y._right) {
+            x = y;
+            y = y._parent;
+        }
+        return y;
+    }
+
+    public Entry predecessor(Entry x) {
+
+        if (x._left != null) {
+            return getLargest(x._left);
+        }
+
+        Entry y = x._parent;
+        while (y != null && x == y._left) {
+            x = y;
+            y = y._parent;
+        }
+
+        return y;
     }
 
     public void prettyPrint() {
@@ -113,14 +147,13 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
         Entry<K, V> toInsert = new Entry<>(key, value);
         if (this.isEmpty()) {
             _root = toInsert;
-            _root.color = BLACK;
+            _root.color = 0;
             _size++;
         } else {
             while (temp != null) {
                 if ((_cmp.compare(key, (K) temp._key)) == 0) {
                     V oldValue = (V) temp._value;
                     temp._value = value;
-                    fixAfterInsertion(toInsert);
                     return oldValue;
                 }//update
                 if ((_cmp.compare(key, (K) temp._key)) > 0) {
@@ -146,47 +179,11 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
 
         return value;
     }
-    private boolean removeIterativeCmp(Entry<K, V> n, K key) {
-        Entry<K, V> temp = n;
-        while (temp != null) {
-            if (_cmp.compare(key, temp._key) == 0) {
-                if (temp._left == null && temp._right == null) {
-                    Entry<K, V> parent = temp._parent;
-                    if (temp == parent._left)
-                        parent._left = null;
-                    else
-                        parent._right = null;
-                    return true;
 
-                }
-                if (temp._left != null && temp._right != null) {
-                    K newKey = getLargest(temp._left)._key;//getSmallest(temp._right);
-                    temp._key = newKey;
-                    removeIterative(temp._left, newKey);//removeIterative(n._right,newValue);
-                    return true;
-                }
-                Entry<K, V> child = temp._right;
-                if (child == null)
-                    child = temp._left;
-                Entry<K, V> parent = temp._parent;
-                if (temp == parent._left)
-                    parent._left = child;
-                else
-                    parent._right = child;
-                return true;
-            }
-            if (_cmp.compare(key, temp._key) > 0)
-                temp = temp._right;
-            if (_cmp.compare(key, temp._key) < 0)
-                temp = temp._left;
-        }
-        return false;
-    }
-    private V insertIterative(K key, V value) {
-        Entry temp = _root;
+    private V insertIterative(Entry<K, V> temp, K key, V value) {
         Entry<K, V> toInsert = new Entry<>(key, value);
-        toInsert.color = RED;
         if (this.isEmpty()) {
+            toInsert.color = 0;
             _root = toInsert;
             _size++;
         } else {
@@ -201,131 +198,150 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
                         temp._right = toInsert;
                         temp._right._parent = temp;
                         _size++;
-                        if (toInsert._parent == null){
-                            toInsert.color = BLACK;
-                            return value;
-                        }
-                        if (toInsert._parent._parent == null) {
-                            return value;
-                        }
-                        fixAfterInsertion(toInsert);
                         return value;
-                    } else
+                    } else {
                         temp = temp._right;
+                        insertIterative(temp, key, value);
+                    }
+
                 }//right
                 if (key.compareTo((K) temp._key) < 0) {
                     if (temp._left == null) {
                         temp._left = toInsert;
                         temp._left._parent = temp;
                         _size++;
-                        if (toInsert._parent == null){
-                            toInsert.color = BLACK;
-                            return value;
-                        }
-
-                        if (toInsert._parent._parent == null) {
-                            return value;
-                        }
-                        fixAfterInsertion(toInsert);
                         return value;
-                    } else
+                    } else {
                         temp = temp._left;
+                        insertIterative(temp, key, value);
+
+                    }
                 }//left
             }
         }
 
         return value;
     }
-    private boolean removeIterative(Entry<K, V> n, K key) {
-        Entry<K, V> temp = n;
-        while (temp != null) {
-            if (key.compareTo(temp._key) == 0) {
-                if (temp._left == null && temp._right == null) {
-                    Entry<K, V> parent = temp._parent;
-                    if (temp == parent._left)
-                        parent._left = null;
-                    else
-                        parent._right = null;
-                    return true;
 
-                }
-                if (temp._left != null && temp._right != null) {
-                    K newKey = getLargest(temp._left)._key;//getSmallest(temp._right);
-                    temp._key = newKey;
-                    removeIterative(temp._left, newKey);//removeIterative(n._right,newValue);
-                    return true;
-                }
-                Entry<K, V> child = temp._right;
-                if (child == null)
-                    child = temp._left;
-                Entry<K, V> parent = temp._parent;
-                if (temp == parent._left)
-                    parent._left = child;
-                else
-                    parent._right = child;
-                return true;
+    private void remove(Entry<K, V> node, K key) {
+        // find the node containing key
+        Entry<K, V> z = _nil;
+        Entry<K, V> x, y;
+        while (node != _nil) {
+            if (node._key == key) {
+                z = node;
             }
-            if (key.compareTo(temp._key) > 0)
-                temp = temp._right;
-            if (key.compareTo(temp._key) < 0)
-                temp = temp._left;
+
+            if (node._key.compareTo(key) < 0 || node._key.compareTo(key) == 0) {
+                node = node._right;
+            } else {
+                node = node._left;
+            }
         }
-        return false;
+
+        if (z == _nil) {
+            System.out.println("Couldn't find key in the tree");
+            return;
+        }
+
+        y = z;
+        int yOriginalColor = y.color;
+        if (z._left == _nil) {
+            x = z._right;
+            rbTransplant(z, z._right);
+        } else if (z._right == _nil) {
+            x = z._left;
+            rbTransplant(z, z._left);
+        } else {
+            y = getSmallest(z._right);
+            yOriginalColor = y.color;
+            x = y._right;
+            if (y._parent == z) {
+                x._parent = y;
+            } else {
+                rbTransplant(y, y._right);
+                y._right = z._right;
+                y._right._parent = y;
+            }
+
+            rbTransplant(z, y);
+            y._left = z._left;
+            y._left._parent = y;
+            y.color = z.color;
+        }
+        if (yOriginalColor == 0) {
+            fixAfterDeletion(x);
+        }
     }
 
+    private void insert(K key, V value) {
+        // Ordinary Binary Search Insertion
+        Entry<K, V> entry = new Entry(key, value);
+        entry._parent = null;
+        entry._key = key;
+        entry._left = _nil;
+        entry._right = _nil;
+        entry.color = 1; // new node must be red
 
-    private void leftRotate(Entry<K, V> n) {
-        Entry<K, V> x = n;
-        Entry<K, V> y = n._right;
-        Entry<K, V> k = y._left;
+        Entry<K, V> y = null;
+        Entry<K, V> x = this._root;
 
-        if (n == n._parent._left)
-            n._parent._left = n._right;
-        else
-            n._parent._right = n._right;
+        while (x != _nil) {
+            y = x;
+            if (entry._key.compareTo(x._key) < 0) {
+                x = x._left;
+            } else {
+                x = x._right;
+            }
+        }
 
-        n._right._parent = n._parent;
+        // y is parent of x
+        entry._parent = y;
+        if (y == null) {
+            _root = entry;
+        } else if (entry._key.compareTo(y._key) < 0) {
+            y._left = entry;
+        } else {
+            y._right = entry;
+        }
+
+        // if new node is a root node, simply return
+        if (entry._parent == null) {
+            entry.color = 0;
+            return;
+        }
+
+        // if the grandparent is null, simply return
+        if (entry._parent._parent == null) {
+            return;
+        }
+
+        // Fix the tree
+        fixAfterInsertion(entry);
+    }
+
+    private void leftRotate(Entry<K, V> x) {
+
+        Entry<K, V> y = x._right;
+        x._right = y._left;
+        if (y._left != null) {
+            y._left._parent = x;
+        }
+        y._parent = x._parent;
+        if (x._parent == null) {
+            this._root = y;
+        } else if (x == x._parent._left) {
+            x._parent._left = y;
+        } else {
+            x._parent._right = y;
+        }
         y._left = x;
         x._parent = y;
-        x._left = k;
-        if (k == null)
-            k._parent = x;
-
-//        Entry<K, V> y = x._right;
-//        x._right = y._left;
-//        if (y._left != null) {
-//            y._left._parent = x;
-//        }
-//        y._parent = x._parent;
-//        if (x._parent == null) {
-//            this._root = y;
-//        } else if (x == x._parent._left) {
-//            x._parent._left = y;
-//        } else {
-//            x._parent._right = y;
-//        }
-//        y._left = x;
-//        x._parent = y;
 
 
     }
 
     private void rightRotate(Entry<K, V> x) {
-
-//        Entry<K, V> x = n;
-//        Entry<K, V> y = n._left;
-//        Entry<K, V> k = y._right;
-//
-//        if (n == n._parent._left)
-//            n._parent._left = y;
-//        else
-//            n._parent._right = y;
-//
-//        y._right = x;
-//        x._parent = y;
-//        x._right = k;
-//        if (k == null)
-//           k._parent = x;
 
         Entry<K, V> y = x._left;
         x._left = y._right;
@@ -344,27 +360,167 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
         x._parent = y;
     }
 
-    private Entry<K, V> getSmallest(Entry<K, V> n) {
-
-        if (n == null)
-            return null;
-        Entry<K, V> t = n;
-        while (t._left != null)
-            t = t._left;
-
-        return t;
+    public Entry<K, V> getSmallest(Entry<K, V> n) {
+        while (n._left != _nil) {
+            n = n._left;
+        }
+        return n;
     }
 
-    private Entry<K, V> getLargest(Entry<K, V> n) {
+    public Entry<K, V> getLargest(Entry<K, V> n) {
 
-        if (n != null)
-            return null;
-        Entry<K, V> t = n;
-        while (t._right != null)
-            t = t._right;
+        while (n._right != _nil) {
+            n = n._right;
+        }
+        return n;
+    }
 
+    private void fixAfterInsertion(Entry<K, V> k) {
+        Entry<K, V> u;
+        while (k._parent.color == 1) {
+            if (k._parent == k._parent._parent._right) {
+                u = k._parent._parent._left; // uncle
+                if (u.color == 1) {
+                    // case 3.1
+                    u.color = 0;
+                    k._parent.color = 0;
+                    k._parent._parent.color = 1;
+                    k = k._parent._parent;
+                } else {
+                    if (k == k._parent._left) {
+                        // case 3.2.2
+                        k = k._parent;
+                        rightRotate(k);
+                    }
+                    // case 3.2.1
+                    k._parent.color = 0;
+                    k._parent._parent.color = 1;
+                    leftRotate(k._parent._parent);
+                }
+            } else {
+                u = k._parent._parent._right; // uncle
 
-        return t;
+                if (u.color == 1) {
+                    // mirror case 3.1
+                    u.color = 0;
+                    k._parent.color = 0;
+                    k._parent._parent.color = 1;
+                    k = k._parent._parent;
+                } else {
+                    if (k == k._parent._right) {
+                        // mirror case 3.2.2
+                        k = k._parent;
+                        leftRotate(k);
+                    }
+                    // mirror case 3.2.1
+                    k._parent.color = 0;
+                    k._parent._parent.color = 1;
+                    rightRotate(k._parent._parent);
+                }
+            }
+            if (k == _root) {
+                break;
+            }
+        }
+        _root.color = 0;
+    }
+
+    private void fixAfterDeletion(Entry<K, V> x) {
+        Entry<K, V> s;
+        while (x != _root && x.color == 0) {
+            if (x == x._parent._left) {
+                s = x._parent._right;
+                if (s.color == 1) {
+                    // case 3.1
+                    s.color = 0;
+                    x._parent.color = 1;
+                    leftRotate(x._parent);
+                    s = x._parent._right;
+                }
+
+                if (s._left.color == 0 && s._right.color == 0) {
+                    // case 3.2
+                    s.color = 1;
+                    x = x._parent;
+                } else {
+                    if (s._right.color == 0) {
+                        // case 3.3
+                        s._left.color = 0;
+                        s.color = 1;
+                        rightRotate(s);
+                        s = x._parent._right;
+                    }
+
+                    // case 3.4
+                    s.color = x._parent.color;
+                    x._parent.color = 0;
+                    s._right.color = 0;
+                    leftRotate(x._parent);
+                    x = _root;
+                }
+            } else {
+                s = x._parent._left;
+                if (s.color == 1) {
+                    // case 3.1
+                    s.color = 0;
+                    x._parent.color = 1;
+                    rightRotate(x._parent);
+                    s = x._parent._left;
+                }
+
+                if (s._right.color == 0 && s._right.color == 0) {
+                    // case 3.2
+                    s.color = 1;
+                    x = x._parent;
+                } else {
+                    if (s._left.color == 0) {
+                        // case 3.3
+                        s._right.color = 0;
+                        s.color = 1;
+                        leftRotate(s);
+                        s = x._parent._left;
+                    }
+
+                    // case 3.4
+                    s.color = x._parent.color;
+                    x._parent.color = 0;
+                    s._left.color = 0;
+                    rightRotate(x._parent);
+                    x = _root;
+                }
+            }
+        }
+        x.color = 0;
+    }
+
+    private void rbTransplant(Entry<K, V> u, Entry<K, V> v) {
+        if (u._parent == null) {
+            _root = v;
+        } else if (u == u._parent._left) {
+            u._parent._left = v;
+        } else {
+            u._parent._right = v;
+        }
+        v._parent = u._parent;
+    }
+
+    private void printHelper(Entry<K, V> root, String indent, boolean last) {
+        // print the tree structure on the screen
+        if (root != _nil) {
+            System.out.print(indent);
+            if (last) {
+                System.out.print("R----");
+                indent += "     ";
+            } else {
+                System.out.print("L----");
+                indent += "|    ";
+            }
+
+            String sColor = root.color == 1 ? "RED" : "BLACK";
+            System.out.println(root._value + "(" + sColor + ")");
+            printHelper(root._left, indent, false);
+            printHelper(root._right, indent, true);
+        }
     }
 
     private Entry<K, V> getEntry(K key) {
@@ -373,9 +529,9 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
         int cmp;
         while (p != null) {
             if (_cmp == null)
-                 cmp = key.compareTo(p._key);
+                cmp = key.compareTo(p._key);
             else
-                 cmp = _cmp.compare(key, p._key);
+                cmp = _cmp.compare(key, p._key);
             if (cmp < 0)
                 p = p._left;
             else if (cmp > 0)
@@ -386,137 +542,25 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
         return null;
     }
 
+    public HashSet getEntriesSmallerThan(K key) {
+        HashSet set = new HashSet();
 
-    private void fixAfterInsertion(Entry<K, V> k) {
-        Entry<K, V> u;
-        while (k._parent.color == RED) {
-            if (k._parent == k._parent._parent._right) {
-                u = k._parent._parent._left;
-                if (u.color == RED) {
-                    u.color = BLACK;
-                    k._parent.color = BLACK;
-                    k._parent._parent.color = RED;
-                    k = k._parent._parent;
-                } else {
-                    if (k == k._parent._left) {
-                        k = k._parent;
-                        rightRotate(k);
-                    }
-                    k._parent.color = BLACK;
-                    k._parent._parent.color = RED;
-                    leftRotate(k._parent._parent);
-                }
-            } else {
-                u = k._parent._parent._right;
-                if (u.color == RED) {
-                    u.color = BLACK;
-                    k._parent.color = BLACK;
-                    k._parent._parent.color = RED;
-                    k = k._parent._parent;
-                } else {
-                    if (k == k._parent._right) {
-                        k = k._parent;
-                        leftRotate(k);
-                    }
-                    k._parent.color = BLACK;
-                    k._parent._parent.color = RED;
-                    rightRotate(k._parent._parent);
-                }
-            }
-            if (k == _root) {
-                break;
-            }
-        }
-        _root.color = BLACK;
-    }
-    private void fixAfterDeletion(Entry<K, V> x) {
-        Entry<K, V> s;
-        while (x != _root && x.color == BLACK) {
-            if (x == x._parent._left) {
-                s = x._parent._right;
-                if (s.color == RED) {
-                    s.color = BLACK;
-                    x._parent.color = RED;
-                    leftRotate(x._parent);
-                    s = x._parent._right;
-                }
-                if (s._left.color == BLACK && s._right.color == BLACK) {
-                    s.color = RED;
-                    x = x._parent;
-                } else {
-                    if (s._right.color == BLACK) {
-                        s._left.color = BLACK;
-                        s.color = RED;
-                        rightRotate(s);
-                        s = x._parent._right;
-                    }
-                    s.color = x._parent.color;
-                    x._parent.color = BLACK;
-                    s._right.color = BLACK;
-                    leftRotate(x._parent);
-                    x = _root;
-                }
-            } else {
-                s = x._parent._left;
-                if (s.color == RED) {
-                    s.color = BLACK;
-                    x._parent.color = RED;
-                    rightRotate(x._parent);
-                    s = x._parent._left;
-                }
-                if (s._right.color == BLACK && s._right.color == BLACK) {
-                    s.color = RED;
-                    x = x._parent;
-                } else {
-                    if (s._left.color == BLACK) {
+        inOrderHelper(_root, set, key);
 
-                        s._right.color = BLACK;
-                        s.color = RED;
-                        leftRotate(s);
-                        s = x._parent._left;
-                    }
-                    s.color = x._parent.color;
-                    x._parent.color = BLACK;
-                    s._left.color = BLACK;
-                    rightRotate(x._parent);
-                    x = _root;
-                }
-            }
-        }
-        x.color = BLACK;
+        return set;
+
 
     }
 
-    private void printHelper(Entry<K, V> root, String indent, boolean last) {
-        // print the tree structure on the screen
-        if (root != null) {
-            System.out.print(indent);
-            if (last) {
-                System.out.print("R----");
-                indent += "     ";
-            } else {
-                System.out.print("L----");
-                indent += "|    ";
-            }
-
-            String sColor = root.color == RED ?"RED":"BLACK";
-            System.out.println(root._value + "(" + sColor + ")");
-            printHelper(root._left, indent, false);
-            printHelper(root._right, indent, true);
-        }
-    }
-    public void printInorder() {
-        System.out.println("Printing binary tree using inorder");
-        inOrder(_root);
-    }
-
-    private void inOrder(Entry<K, V> r) {
-
-        if (r == null)
+    private void inOrderHelper(Entry<K, V> r, HashSet set, K key) {
+        if (r == _nil)
             return;
-        inOrder(r._left);
-        //process(n._value);
-        System.out.println(r._value);
-        inOrder(r._right);
+        inOrderHelper(r._left, set, key);
+        if (r._key.compareTo(key) < 0) {
+            System.out.println(r._key + " " + r._value);
+            set.add(new Entry<>(r._key, r._value));
+        }
+        inOrderHelper(r._right, set, key);
     }
+
 }

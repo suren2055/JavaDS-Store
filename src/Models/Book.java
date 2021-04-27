@@ -2,10 +2,9 @@ package Models;
 
 import java.util.Objects;
 
-public class Book extends Product implements IBook, Comparable<Book> {
+public class Book extends Product implements IBook {
 
     private int NumberOfPages;
-
     private String  Title;
     private String Genre;
 
@@ -28,13 +27,7 @@ public class Book extends Product implements IBook, Comparable<Book> {
         return Title;
     }
 
-    public int compareTo(Book o) {
 
-        if (Title.compareTo(o.getTitle())==0)
-            return NumberOfPages-o.getNumberOfPages();
-
-        return Title.compareTo(o.getTitle());
-    }
 
 
     @Override
@@ -55,5 +48,20 @@ public class Book extends Product implements IBook, Comparable<Book> {
     @Override
     public int hashCode() {
         return Objects.hash(Title)+ getNumberOfPages() * 31 + 345;
+    }
+
+    @Override
+    public int compareTo(Product o) {
+        if ( o instanceof Book){
+
+            if (Title.compareTo(((Book)o).getTitle())==0)
+                return NumberOfPages-((Book)o).getNumberOfPages();
+
+            return Title.compareTo(((Book)o).getTitle());
+
+        }
+
+        return -1;
+
     }
 }

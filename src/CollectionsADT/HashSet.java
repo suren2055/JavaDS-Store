@@ -56,6 +56,7 @@ public class HashSet<T extends Comparable<T>> implements Set<T> {
 
         if (hashtable[hashIndex] == null) {
             hashtable[hashIndex] = new Node(e, null);
+            size++;
             return true;
         } else {
 

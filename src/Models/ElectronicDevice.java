@@ -31,4 +31,9 @@ public class ElectronicDevice extends Product implements IDevice {
                 '}'+"-"+super.toString();
     }
 
+
+    public int compareTo(Product o) {
+
+        return 0;
+    }
 }

@@ -1,13 +1,14 @@
 
 import java.io.FileReader;
 
-import CollectionsADT.*;
-import CollectionsADT.Abstract.Deque;
+
 import CollectionsADT.ArrayDeque;
 import CollectionsADT.HashMap;
 import CollectionsADT.HashSet;
 import CollectionsADT.LinkedList;
 import CollectionsADT.TreeMap;
+import CollectionsADT.TreeSet;
+import Helpers.SortingHelper;
 import Models.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -19,7 +20,6 @@ import javax.xml.bind.SchemaOutputResolver;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.TreeSet;
 
 public class MyOnlineShop {
     static double rangeMin = 0.5;
@@ -31,26 +31,96 @@ public class MyOnlineShop {
 
     public static void main(String[] str) {
 
-        TreeMap<Integer, Integer> bst = new TreeMap<Integer,Integer>();
-        bst.put(8,8);
-        bst.put(18,18);
-        bst.put(5,5);
-        bst.put(15,15);
-        bst.put(17,17);
-        bst.put(25,25);
-        bst.put(40,40);
-        bst.put(80,80);
-        //bst.remove(25);
-        bst.prettyPrint();
+        User[] users = new User[0];
+        try {
+            users = serializeUsers();
 
+        } catch (Exception ex) { }
+        //#region N1
+        System.out.println("*********************TreeSet*********************");
+        TreeSet<Integer> tSet = new TreeSet<>();
+        tSet.add(8);
+        tSet.add(18);
+        tSet.add(5);
+        tSet.add(15);
+        tSet.add(17);
+        tSet.add(25);
+        tSet.add(40);
+        tSet.add(80);
+        tSet.remove(25);
+        tSet.prettyPrint();
+
+        tSet.subset(15, 18);
+
+        if (!tSet.contains(25))
+            System.out.println("SUCCESS");
+        else
+            System.out.println("FAILURE");
+
+        //#endregion
+
+        //#region N2 ProductsPriceComparator, ProductsRateComparator implemented in Product class
+        //#endregion
+
+        //#region N3
+        System.out.println("****************TreeMap*********************");
+        TreeMap<Integer, Integer> tMap = new TreeMap<Integer, Integer>();
+        tMap.put(8, 8);
+        tMap.put(18, 18);
+        tMap.put(5, 5);
+        tMap.put(15, 15);
+        tMap.put(17, 17);
+        tMap.put(25, 25);
+        tMap.put(40, 40);
+        tMap.put(80, 80);
+        tMap.remove(25);
+        tMap.prettyPrint();
+
+        HashSet set = tMap.getEntriesSmallerThan(18);
+
+        if (set.size() == 4)
+            System.out.println("SUCCESS");
+        else
+            System.out.println("FAILURE");
+        //#endregion
+
+        //#region 5
+        ArrayDeque<Product> p = new ArrayDeque<>();
+        Product p1 = new Book(230,"MS-SQL","Programming");
+        Product p2 = new Book(510,"Freeman A.","Programming");
+        Product p3 = new Book(649,"Richter","Programming");
+        Product p4 = new Book(591,"Lock A.","Programming");
+        Product p5 = new Book(128,"Asp.NET-Core","Programming");
+
+        p1.setRating(5.2);
+        p2.setRating(6.8);
+        p3.setRating(9.5);
+        p4.setRating(1.64);
+        p5.setRating(4.2);
+
+        p.pushFront(p1);
+        p.pushBack(p2);
+        p.pushBack(p3);
+        p.pushBack(p4);
+        p.pushBack(p5);
+
+        recentlyViewedProductsPerUser.put(users[5], p);
+        recentlyViewedProductsPerUser.put(users[7], p);
+        recentlyViewedProductsPerUser.put(users[3], p);
+        recentlyViewedProductsPerUser.put(users[1], p);
+
+        HashSet x= getUserFavourites(users[7], new Product.ProductsRateComparator());
+        if (x.size()==5)
+            System.out.println("SUCCESS");
+        else
+            System.out.println("FAILURE");
+        //#endregion
 
     }
 
     public static void viewItem(Product p) {
-
         if (viewItems.size() == 10)
             viewItems.popBack();
-
         viewItems.pushFront(p);
     }
 
@@ -129,6 +199,28 @@ public class MyOnlineShop {
         }
         return users;
 
+    }
+
+    private  static HashSet<Product> getUserFavourites(User u, Comparator<Product> p) {
+        HashSet set = new HashSet();
+        Product[] products = new Product[5];
+        int index = 0;
+        for (HashMap.Entry<User, ArrayDeque<Product>> x : recentlyViewedProductsPerUser) {
+            if (x._key.equals(u)) {
+                System.out.println(u.toString());
+                for (Product y: x._value) {
+                    System.out.println(y.toString());
+                    products[index] = y;
+                    index++;
+                }
+            }
+        }
+        SortingHelper.insertionSort(products,p);
+        for (int i = 0;i<products.length;i++) {
+            set.add(products[i]);
+        }
+
+        return set;
     }
 
 

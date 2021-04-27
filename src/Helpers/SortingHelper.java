@@ -23,12 +23,12 @@ public class SortingHelper {
 
     }
 
-    public static <T extends Comparable> void insertionSort(T[] data) {
+    public static <T extends Comparable> void insertionSort(T[] data, Comparator cmp) {
         int n = data.length;
         for (int k = 1; k < n; k++) {
             T cur = data[k];
             int j = k;
-            while (j > 0 && data[j - 1].compareTo(cur) > 0) {
+            while (j > 0 && (cmp==null ? data[j - 1].compareTo(cur) : cmp.compare(data[j - 1],cur)) > 0) {
                 data[j] = data[j - 1];
                 j--;
             }

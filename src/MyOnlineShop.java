@@ -116,6 +116,14 @@ public class MyOnlineShop {
             System.out.println("FAILURE");
         //#endregion
 
+
+        System.out.println("Sorting with radix");
+
+        int[] arr = new int[]{2,23,2453,655,655,12,6,899,87,34,59};
+        SortingHelper.radixSort(arr);
+        for (int i=0;i< arr.length;i++){
+            System.out.println(arr[i]);
+        }
     }
 
     public static void viewItem(Product p) {

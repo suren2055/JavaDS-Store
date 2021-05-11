@@ -2,7 +2,9 @@ package CollectionsADT;
 
 import CollectionsADT.Abstract.Queue;
 
-public class ArrayQueue<T> implements Queue<T> {
+import java.util.Iterator;
+
+public class ArrayQueue<T> implements Queue<T>, Iterable<T>  {
 
     private Object[] objects;
     private int first;
@@ -50,5 +52,26 @@ public class ArrayQueue<T> implements Queue<T> {
     private void resize() {
 
 
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+            int current = first;
+
+            @Override
+            public boolean hasNext() {
+                return current != size;
+            }
+
+            @Override
+            public T next() {
+                if (current == size)
+                    System.out.println("No such element");
+                T data = (T)objects[current];
+                current = (current + 1) % objects.length;
+                return data;
+            }
+        };
     }
 }

@@ -1,5 +1,8 @@
 package Helpers;
 
+import CollectionsADT.LinkedList;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -28,7 +31,7 @@ public class SortingHelper {
         for (int k = 1; k < n; k++) {
             T cur = data[k];
             int j = k;
-            while (j > 0 && (cmp==null ? data[j - 1].compareTo(cur) : cmp.compare(data[j - 1],cur)) > 0) {
+            while (j > 0 && (cmp == null ? data[j - 1].compareTo(cur) : cmp.compare(data[j - 1], cur)) > 0) {
                 data[j] = data[j - 1];
                 j--;
             }
@@ -180,9 +183,9 @@ public class SortingHelper {
             if (arr[i].compareTo(piv) < 0)
                 i++;
             else {
-                if (arr[j].compareTo(piv)>0)
+                if (arr[j].compareTo(piv) > 0)
                     j--;
-                else{
+                else {
                     T tmp = arr[i];
                     arr[i] = arr[j];
                     arr[j] = tmp;
@@ -192,8 +195,8 @@ public class SortingHelper {
                 }
             }
 
-            quickSortInPlaceOption2(arr,s,i-1);
-            quickSortInPlaceOption2(arr,j+1, arr.length);
+            quickSortInPlaceOption2(arr, s, i - 1);
+            quickSortInPlaceOption2(arr, j + 1, arr.length);
 
 
         }
@@ -202,4 +205,54 @@ public class SortingHelper {
     }
 
     //endregion
+
+    //Bucket sort O(n)
+
+    public static void bucketSort(int[] arr, int p) {
+
+        ArrayList<LinkedList<Integer>> buckets = new ArrayList<>();
+        for (int i = 0; i < 10; i++)
+            buckets.add(new LinkedList<Integer>());
+
+        for (int i = 0; i < arr.length; i++)
+            buckets.get((int) (arr[i] / Math.pow(10, p) % 10)).addLast(arr[i]);
+
+        int j = 0;
+        for (LinkedList<Integer> b : buckets) {
+            for (Integer e : b) {
+                arr[j] = e;
+                j++;
+            }
+        }
+    }
+
+
+    //Radix sort uses the bucket sort
+    public static void radixSort(int[] arr) {
+
+        int maxNumberOfDigits = 0;
+
+        for (int i = 0; i < arr.length; i++) {
+            int n = getNumberOfDigits(arr[i]);
+            if (maxNumberOfDigits < n) {
+                maxNumberOfDigits = n;
+            }
+        }
+
+        for (int pos = 0; pos < maxNumberOfDigits; pos++) {
+            bucketSort(arr, pos);
+        }
+    }
+
+
+    private static int getNumberOfDigits(int x) {
+        int counter = 0;
+        while (x > 0) {
+            counter++;
+            x = x / 10;
+        }
+        return counter;
+    }
+
+    //TODO:See also counter sort
 }

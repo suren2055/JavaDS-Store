@@ -24,7 +24,7 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
         _cmp = cmp;
     }
 
-    static class Node<T extends Comparable<T>> implements  Comparable<Node<T>>{
+    static class Node<T extends Comparable<T>> implements Comparable<Node<T>> {
 
         private T _value;
         private Node<T> _left = null;
@@ -43,12 +43,15 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
         public T get_value() {
             return _value;
         }
+
         public void set_value(T _value) {
             this._value = _value;
         }
+
         public Node<T> get_parent() {
             return _parent;
         }
+
         public void set_parent(Node<T> _parent) {
             this._parent = _parent;
         }
@@ -59,6 +62,51 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
         }
     }
 
+    public class PostOrderIterator implements Iterator<T> {
+        Node current = _root;
+
+        public PostOrderIterator() {
+            if (_root != null) {
+                if (_root._left != null)
+                    current = getSmallest(_root._left);
+                else if (_root._right != null) {
+                    current = getSmallest(_root._right);
+                }
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return current != null;
+        }
+
+        @Override
+        public T next() {
+            if (hasNext()) {
+                T data = (T) current._value;
+                current = postOrder(current);
+                return data;
+            }
+            return null;
+        }
+    }
+
+    private Node<T> postOrder(Node n) {
+        if (n._parent == null)
+            return null;
+
+        if (n._parent._right != null) {
+            if (n._parent._right.equals(n)) {
+                return n._parent;
+            } else {
+                Node temp = n._parent._right;
+                while (temp._left != null)
+                    temp = temp._left;
+                return temp;
+            }
+        }
+        return n._parent;
+    }
 
     public boolean add(T e) {
         if (contains(e))
@@ -68,14 +116,17 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
 
         return true;
     }
+
     public boolean remove(T e) {
         removeNode(this._root, e);
         return true;
 
     }
+
     public boolean contains(T e) {
         return containsNode(_root, e);
     }
+
     public void prettyPrint() {
         printHelper(this._root, "", true);
     }
@@ -83,30 +134,35 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
     public int size() {
         return _size;
     }
+
     public boolean isEmpty() {
-        return _size==0;
+        return _size == 0;
     }
+
     public boolean equals(Set set) {
         return false;
     }
+
     public boolean containsAll(Set set) {
         return false;
     }
+
     public boolean addAll(Set set) {
         return false;
     }
+
     public boolean removeAll(Set set) {
         return false;
     }
+
     public boolean retainAll(Set set) {
         return false;
     }
 
-
     public HashSet<T> subset(T p1, T p2) {
         //returns a new set which contains all products from parent set which are larger than the p1 and smaller than p2
         HashSet set = new HashSet();
-        inOrderHelper(this._root, set, p1,p2);
+        inOrderHelper(this._root, set, p1, p2);
 
         return set;
     }
@@ -130,7 +186,7 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
         node._parent = y;
         if (y == null) {
             _root = node;
-        } else if (node._value.compareTo( y._value) < 0) {
+        } else if (node._value.compareTo(y._value) < 0) {
             y._left = node;
         } else {
             y._right = node;
@@ -138,6 +194,7 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
         // PART 2: re-balance the node if necessary
         updateBalance(node);
     }
+
     private boolean containsNode(Node<T> current, T value) {
         if (current == null) {
             return false;
@@ -152,19 +209,20 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
         }
     }
 
-
     private Node<T> getSmallest(Node<T> node) {
         while (node._left != null) {
             node = node._left;
         }
         return node;
     }
+
     private Node<T> getLargest(Node<T> node) {
         while (node._right != null) {
             node = node._right;
         }
         return node;
     }
+
     private void leftRotate(Node<T> x) {
         Node y = x._right;
         x._right = y._left;
@@ -186,6 +244,7 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
         x._bf = x._bf - 1 - Math.max(0, y._bf);
         y._bf = y._bf - 1 + Math.min(0, x._bf);
     }
+
     private void rightRotate(Node<T> x) {
         Node y = x._left;
         x._left = y._right;
@@ -207,6 +266,7 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
         x._bf = x._bf + 1 - Math.min(0, y._bf);
         y._bf = y._bf + 1 + Math.max(0, x._bf);
     }
+
     private void updateBalance(Node node) {
         if (node._bf < -1 || node._bf > 1) {
             rebalance(node);
@@ -227,6 +287,7 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
             }
         }
     }
+
     private void rebalance(Node node) {
         if (node._bf > 0) {
             if (node._right._bf < 0) {
@@ -263,6 +324,7 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
             printHelper(currPtr._right, indent, true);
         }
     }
+
     private Node removeNode(Node<T> node, T v) {
         // search the key
         if (node == null) return node;
@@ -280,9 +342,7 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
             else if (node._left == null) {
                 Node<T> temp = node;
                 node = node._right;
-            }
-
-            else if (node._right == null) {
+            } else if (node._right == null) {
                 Node<T> temp = node;
                 node = node._left;
             }
@@ -305,11 +365,11 @@ public class TreeSet<T extends Comparable<T>> implements Set<T> {
     private void inOrderHelper(Node<T> node, HashSet set, T p1, T p2) {
         if (node != null) {
             inOrderHelper(node._left, set, p1, p2);
-            if (node._value.compareTo(p1)>0 && node._value.compareTo(p2)<0){
+            if (node._value.compareTo(p1) > 0 && node._value.compareTo(p2) < 0) {
                 set.add(new Node(node._value));
                 System.out.print(node._value + " ");
             }
-            inOrderHelper(node._right,set, p1, p2);
+            inOrderHelper(node._right, set, p1, p2);
         }
     }
 

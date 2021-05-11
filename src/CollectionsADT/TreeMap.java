@@ -4,7 +4,6 @@ import CollectionsADT.Abstract.Map;
 
 
 import java.util.Comparator;
-import java.util.Iterator;
 
 //Based on on red-black tree
 public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implements Map<K, V> {
@@ -12,16 +11,16 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
     private Entry<K, V> _root;
     private int _size;
     private Comparator<K> _cmp;
-    private Entry<K, V> _nil;
+    private Entry<K, V> _leaf;
 
     public TreeMap() {
         _size = 0;
         _cmp = null;
-        _nil = new Entry<>();
-        _nil.color = 0;
-        _nil._left = null;
-        _nil._right = null;
-        _root = _nil;
+        _leaf = new Entry<>();
+        _leaf.color = 0;
+        _leaf._left = null;
+        _leaf._right = null;
+        _root = _leaf;
     }
 
     public TreeMap(Comparator<K> cmp) {
@@ -225,9 +224,9 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
 
     private void remove(Entry<K, V> node, K key) {
         // find the node containing key
-        Entry<K, V> z = _nil;
+        Entry<K, V> z = _leaf;
         Entry<K, V> x, y;
-        while (node != _nil) {
+        while (node != _leaf) {
             if (node._key == key) {
                 z = node;
             }
@@ -239,17 +238,17 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
             }
         }
 
-        if (z == _nil) {
+        if (z == _leaf) {
             System.out.println("Couldn't find key in the tree");
             return;
         }
 
         y = z;
         int yOriginalColor = y.color;
-        if (z._left == _nil) {
+        if (z._left == _leaf) {
             x = z._right;
             rbTransplant(z, z._right);
-        } else if (z._right == _nil) {
+        } else if (z._right == _leaf) {
             x = z._left;
             rbTransplant(z, z._left);
         } else {
@@ -279,14 +278,14 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
         Entry<K, V> entry = new Entry(key, value);
         entry._parent = null;
         entry._key = key;
-        entry._left = _nil;
-        entry._right = _nil;
+        entry._left = _leaf;
+        entry._right = _leaf;
         entry.color = 1; // new node must be red
 
         Entry<K, V> y = null;
         Entry<K, V> x = this._root;
 
-        while (x != _nil) {
+        while (x != _leaf) {
             y = x;
             if (entry._key.compareTo(x._key) < 0) {
                 x = x._left;
@@ -361,7 +360,7 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
     }
 
     public Entry<K, V> getSmallest(Entry<K, V> n) {
-        while (n._left != _nil) {
+        while (n._left != _leaf) {
             n = n._left;
         }
         return n;
@@ -369,7 +368,7 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
 
     public Entry<K, V> getLargest(Entry<K, V> n) {
 
-        while (n._right != _nil) {
+        while (n._right != _leaf) {
             n = n._right;
         }
         return n;
@@ -506,7 +505,7 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
 
     private void printHelper(Entry<K, V> root, String indent, boolean last) {
         // print the tree structure on the screen
-        if (root != _nil) {
+        if (root != _leaf) {
             System.out.print(indent);
             if (last) {
                 System.out.print("R----");
@@ -553,7 +552,7 @@ public class TreeMap<K extends Comparable<K>, V extends Comparable<V>> implement
     }
 
     private void inOrderHelper(Entry<K, V> r, HashSet set, K key) {
-        if (r == _nil)
+        if (r == _leaf)
             return;
         inOrderHelper(r._left, set, key);
         if (r._key.compareTo(key) < 0) {
